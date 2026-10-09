@@ -93,6 +93,13 @@
       <div class="score-pill" id="live-score">0 对 / 0 错</div>
     </div>
 
+    <div class="jump-bar">
+      <label class="jump-label" for="jump-num">跳到</label>
+      <input type="number" id="jump-num" class="jump-input" min="1" step="1" inputmode="numeric" placeholder="题号" />
+      <button type="button" class="secondary jump-btn" id="btn-jump">前往</button>
+      <button type="button" class="secondary jump-btn" id="btn-picker">选题</button>
+    </div>
+
     <article class="quiz-card">
       <div class="meta">
         <span class="badge" id="q-section">15.1</span>
@@ -111,6 +118,7 @@
         </div>
       </div>
       <div class="actions">
+        <button type="button" class="secondary" id="btn-prev" hidden>上一题</button>
         <button type="button" class="primary" id="btn-check">提交答案</button>
         <button type="button" class="secondary" id="btn-show" hidden>查看答案</button>
         <button type="button" class="primary" id="btn-next" hidden>下一题</button>
@@ -119,6 +127,18 @@
 
     <p class="hint" id="quiz-hint">提示：在题干空白处直接填写；数字、单位尽量与原文一致。</p>
   </section>
+
+  <!-- 选题面板 -->
+  <div id="picker-overlay" class="picker-overlay" hidden>
+    <div class="picker-panel" role="dialog" aria-modal="true" aria-labelledby="picker-title">
+      <div class="picker-head">
+        <strong id="picker-title">快速选题</strong>
+        <button type="button" class="ghost" id="btn-picker-close">关闭</button>
+      </div>
+      <input type="search" id="picker-search" class="picker-search" placeholder="搜题干 / 小节 / 题型…" autocomplete="off" />
+      <div id="picker-list" class="picker-list"></div>
+    </div>
+  </div>
 
   <section id="view-result" class="view">
     <header class="hero compact">
@@ -146,9 +166,9 @@
     </div>
   </section>
 
-  <script src="questions.js?v=exam5"></script>
-  <script src="extra_questions.js?v=exam5"></script>
-  <script src="app.js?v=exam5"></script>
+  <script src="questions.js?v=exam6"></script>
+  <script src="extra_questions.js?v=exam6"></script>
+  <script src="app.js?v=exam6"></script>
   <script>
     (function () {
       var n =

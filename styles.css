@@ -189,6 +189,13 @@ body {
   padding: 3px 10px; border-radius: 999px;
 }
 .badge.soft { background: #f3ebe4; color: var(--accent); }
+.badge.q-no {
+  background: var(--brand-deep);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
 .q-text {
   margin: 0 0 18px;
   font-size: 18px; font-weight: 600; line-height: 1.7;

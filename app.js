@@ -365,7 +365,26 @@
     $("#q-answer").hidden = true;
     $("#btn-check").hidden = false;
     $("#btn-show").hidden = false;
-    $("#btn-next").hidden = true;
+    updateNavButtons();
+    const jump = $("#jump-num");
+    if (jump) {
+      jump.max = String(state.queue.length);
+      jump.value = String(state.index + 1);
+    }
+  }
+
+  function updateNavButtons() {
+    const prev = $("#btn-prev");
+    if (prev) {
+      prev.hidden = false;
+      prev.disabled = state.index <= 0;
+    }
+    const next = $("#btn-next");
+    if (next) {
+      next.hidden = false;
+      next.textContent =
+        state.index >= state.queue.length - 1 ? "结束本轮" : "下一题";
+    }
   }
 
   function getChoiceLetters() {
@@ -509,6 +528,7 @@
     $("#btn-check").hidden = true;
     $("#btn-show").hidden = true;
     $("#btn-next").hidden = false;
+    updateNavButtons();
     $("#live-score").textContent = `${state.correct} 对 / ${state.wrong} 错`;
   }
 
@@ -560,6 +580,82 @@
     }
     state.index += 1;
     renderQuestion();
+  }
+
+  function onPrev() {
+    if (state.index <= 0) return;
+    state.index -= 1;
+    renderQuestion();
+  }
+
+  function jumpTo(n1based) {
+    const n = Number(n1based);
+    if (!Number.isFinite(n)) return;
+    const idx = Math.floor(n) - 1;
+    if (idx < 0 || idx >= state.queue.length) {
+      alert(`请输入 1～${state.queue.length} 之间的题号`);
+      return;
+    }
+    state.index = idx;
+    closePicker();
+    renderQuestion();
+  }
+
+  function stemPreview(q) {
+    return String(q.question || "")
+      .replace(/____/g, "___")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function openPicker() {
+    const overlay = $("#picker-overlay");
+    if (!overlay) return;
+    overlay.hidden = false;
+    const search = $("#picker-search");
+    if (search) {
+      search.value = "";
+      search.focus();
+    }
+    renderPickerList("");
+  }
+
+  function closePicker() {
+    const overlay = $("#picker-overlay");
+    if (overlay) overlay.hidden = true;
+  }
+
+  function renderPickerList(query) {
+    const box = $("#picker-list");
+    if (!box) return;
+    const q = String(query || "").trim().toLowerCase();
+    const rows = [];
+    state.queue.forEach((item, i) => {
+      const type = qType(item);
+      const hay = `${i + 1} ${TYPE_LABEL[type] || type} ${item.section || ""} ${item.question || ""}`.toLowerCase();
+      if (q && !hay.includes(q)) return;
+      rows.push({ i, item, type });
+    });
+    if (!rows.length) {
+      box.innerHTML = `<div class="picker-empty">没有匹配的题目</div>`;
+      return;
+    }
+    box.innerHTML = rows
+      .slice(0, 200)
+      .map(({ i, item, type }) => {
+        const cur = i === state.index ? " current" : "";
+        return `<button type="button" class="picker-item${cur}" data-idx="${i}">
+          <div class="pi-top"><span class="pi-no">#${i + 1}</span><span>${escapeHtml(TYPE_LABEL[type] || type)}</span><span>${escapeHtml(item.section || "")}</span></div>
+          <div class="pi-stem">${escapeHtml(stemPreview(item))}</div>
+        </button>`;
+      })
+      .join("");
+    if (rows.length > 200) {
+      box.innerHTML += `<div class="picker-empty">仅显示前 200 条，请缩小搜索范围</div>`;
+    }
+    box.querySelectorAll(".picker-item").forEach((btn) => {
+      btn.addEventListener("click", () => jumpTo(Number(btn.dataset.idx) + 1));
+    });
   }
 
   function showResult() {
@@ -623,7 +719,21 @@
   });
   on("#btn-check", "click", onCheck);
   on("#btn-show", "click", onShow);
+  on("#btn-prev", "click", onPrev);
   on("#btn-next", "click", onNext);
+  on("#btn-jump", "click", () => jumpTo($("#jump-num") && $("#jump-num").value));
+  on("#jump-num", "keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      jumpTo(e.target.value);
+    }
+  });
+  on("#btn-picker", "click", openPicker);
+  on("#btn-picker-close", "click", closePicker);
+  on("#picker-overlay", "click", (e) => {
+    if (e.target === $("#picker-overlay")) closePicker();
+  });
+  on("#picker-search", "input", (e) => renderPickerList(e.target.value));
   on("#btn-retry-wrong", "click", () => {
     const ids = new Set(state.sessionWrongIds);
     state.mode = "wrong";
@@ -652,6 +762,8 @@
   document.addEventListener("keydown", (e) => {
     const quiz = $("#view-quiz");
     if (!quiz || !quiz.classList.contains("active")) return;
+    if (e.key === "Escape") closePicker();
+    if (e.target && (e.target.id === "jump-num" || e.target.id === "picker-search")) return;
     if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
       e.preventDefault();
       if ($("#btn-next") && !$("#btn-next").hidden) onNext();

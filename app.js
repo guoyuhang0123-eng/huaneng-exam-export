@@ -296,6 +296,8 @@
     state.answered = false;
 
     const secLabel = q.variant ? `${q.section} · 变式${q.variant}` : q.section;
+    const noEl = $("#q-no");
+    if (noEl) noEl.textContent = `第 ${state.index + 1} 题`;
     $("#q-section").textContent = `${TYPE_LABEL[type] || type} · ${secLabel}`;
     $("#q-mode").textContent = MODE_LABEL[state.mode] || state.mode;
     $("#progress-text").textContent = `${state.index + 1} / ${state.queue.length}`;
@@ -366,10 +368,10 @@
     $("#btn-check").hidden = false;
     $("#btn-show").hidden = false;
     updateNavButtons();
+    // 不在这里回写跳转输入框，避免覆盖用户正在输入的题号
     const jump = $("#jump-num");
-    if (jump) {
-      jump.max = String(state.queue.length);
-      jump.value = String(state.index + 1);
+    if (jump && document.activeElement !== jump) {
+      jump.placeholder = `1-${state.queue.length}`;
     }
   }
 
@@ -589,15 +591,21 @@
   }
 
   function jumpTo(n1based) {
-    const n = Number(n1based);
-    if (!Number.isFinite(n)) return;
-    const idx = Math.floor(n) - 1;
+    const raw = String(n1based == null ? "" : n1based).trim().replace(/[^\d]/g, "");
+    const n = parseInt(raw, 10);
+    if (!raw || !Number.isFinite(n)) {
+      alert(`请输入 1～${state.queue.length} 之间的题号`);
+      return;
+    }
+    const idx = n - 1;
     if (idx < 0 || idx >= state.queue.length) {
       alert(`请输入 1～${state.queue.length} 之间的题号`);
       return;
     }
     state.index = idx;
     closePicker();
+    const jump = $("#jump-num");
+    if (jump) jump.value = String(n);
     renderQuestion();
   }
 
@@ -721,12 +729,20 @@
   on("#btn-show", "click", onShow);
   on("#btn-prev", "click", onPrev);
   on("#btn-next", "click", onNext);
-  on("#btn-jump", "click", () => jumpTo($("#jump-num") && $("#jump-num").value));
+  on("#btn-jump", "click", () => {
+    const el = $("#jump-num");
+    jumpTo(el ? el.value : "");
+  });
   on("#jump-num", "keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       jumpTo(e.target.value);
     }
+  });
+  // 只允许数字，避免 type=number 在部分手机上异常回弹
+  on("#jump-num", "input", (e) => {
+    const v = String(e.target.value || "").replace(/[^\d]/g, "");
+    if (e.target.value !== v) e.target.value = v;
   });
   on("#btn-picker", "click", openPicker);
   on("#btn-picker-close", "click", closePicker);

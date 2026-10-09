@@ -95,13 +95,14 @@
 
     <div class="jump-bar">
       <label class="jump-label" for="jump-num">跳到</label>
-      <input type="number" id="jump-num" class="jump-input" min="1" step="1" inputmode="numeric" placeholder="题号" />
+      <input type="text" id="jump-num" class="jump-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="输入题号" />
       <button type="button" class="secondary jump-btn" id="btn-jump">前往</button>
       <button type="button" class="secondary jump-btn" id="btn-picker">选题</button>
     </div>
 
     <article class="quiz-card">
       <div class="meta">
+        <span class="badge q-no" id="q-no">第 1 题</span>
         <span class="badge" id="q-section">15.1</span>
         <span class="badge soft" id="q-mode">顺序</span>
       </div>
@@ -166,9 +167,9 @@
     </div>
   </section>
 
-  <script src="questions.js?v=exam6"></script>
-  <script src="extra_questions.js?v=exam6"></script>
-  <script src="app.js?v=exam6"></script>
+  <script src="questions.js?v=exam7"></script>
+  <script src="extra_questions.js?v=exam7"></script>
+  <script src="app.js?v=exam7"></script>
   <script>
     (function () {
       var n =
